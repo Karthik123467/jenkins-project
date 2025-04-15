@@ -6,23 +6,22 @@ pipeline {
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git 'https://github.com/Karthik123467/jenkins-project.git'
             }
         }
 
-        stage('Stop Existing Containers') {
+        stage('Rebuild and Deploy') {
             steps {
-                script {
-                    sh 'docker-compose down || true'
-                }
-            }
-        }
-
-        stage('Build and Run') {
-            steps {
-                sh 'docker-compose up -d --build'
+                sh 'docker-compose down --remove-orphans || true'
+                sh 'docker-compose up -d --build --force-recreate'
             }
         }
     }
@@ -32,7 +31,8 @@ pipeline {
             echo 'Deployment completed successfully!'
         }
         failure {
-            echo 'Deployment failed.'
+            echo 'Something went wrong during deployment.'
         }
     }
 }
+
