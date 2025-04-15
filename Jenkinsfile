@@ -2,37 +2,35 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = "php_docker_project"
+        COMPOSE_PROJECT_NAME = "php_project"
     }
 
     stages {
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
                 git 'https://github.com/Karthik123467/jenkins-project.git'
             }
         }
 
-        stage('Rebuild and Deploy') {
+        stage('Stop Old Containers') {
             steps {
-                sh 'docker-compose down --remove-orphans || true'
-                sh 'docker-compose up -d --build --force-recreate'
+                sh 'docker-compose down || true'
+            }
+        }
+
+        stage('Build and Run Docker Containers') {
+            steps {
+                sh 'docker-compose up -d --build'
+            }
+        }
+
+        stage('Confirm Running Containers') {
+            steps {
+                sh 'docker ps'
             }
         }
     }
-
-    post {
-        success {
-            echo 'Deployment completed successfully!'
-        }
-        failure {
-            echo 'Something went wrong during deployment.'
-        }
-    }
 }
+
+
 
