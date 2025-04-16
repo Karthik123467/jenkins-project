@@ -9,51 +9,57 @@ pipeline {
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs() // Clean up old files in Jenkins workspace
+                cleanWs() // Make sure no old files remain
             }
         }
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project.git'
+                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project'
             }
         }
 
-        stage('Stop and Remove Old Containers and Volumes') {
+        stage('Stop and Remove Old Containers') {
             steps {
                 script {
                     echo "Stopping and removing old containers and volumes..."
-                    bat "docker-compose down -v || echo Nothing to stop"
+                    bat "docker-compose down -v || echo No containers to stop"
                 }
             }
         }
 
-        stage('Build and Run Fresh Containers') {
+        stage('Build Docker Image (Force Rebuild)') {
             steps {
                 script {
-                    echo "Rebuilding and running containers..."
-                    bat "docker-compose up -d --build"
+                    echo "Building Docker image with --no-cache..."
+                    bat "docker-compose build --no-cache"
                 }
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Run App with Docker Compose') {
             steps {
                 script {
-                    echo "📝 Showing Docker status and logs:"
-                    bat "docker-compose ps"
-                    bat "docker-compose logs --tail=10"
+                    echo "Running the app fresh..."
+                    bat "docker-compose up -d"
                 }
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                bat "docker-compose ps"
+                bat "docker-compose logs --tail=20"
             }
         }
     }
 
     post {
-        failure {
-            echo '❌ Build or deployment failed!'
-        }
         success {
-            echo '✅ App deployed successfully with latest index.php.'
+            echo '✅ Deployment complete. Your updated index.php should be visible now.'
+        }
+        failure {
+            echo '❌ Deployment failed!'
         }
     }
 }
