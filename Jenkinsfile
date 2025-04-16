@@ -1,41 +1,51 @@
-
-
 pipeline {
     agent any
 
     environment {
-        IMAGE_PHP = "php:apache"
-        IMAGE_DB = "mysql:latest"
-        IMAGE_PHPMYADMIN = "phpmyadmin/phpmyadmin"
+        IMAGE_NAME = "PHP-Demo-app"
+        CONTAINER_NAME = "PHP-Demos-container"
     }
 
     stages {
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()
-            }
-        }
-
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project.git'
             }
         }
 
-        stage('Stop and Remove Old Containers and Volumes') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    bat """
-                    docker-compose down -v || echo "Nothing to stop"
-                    """
+                    echo "Building Docker Image..."
+                    bat "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
 
-        stage('Build and Run Containers') {
+        stage('Stop and Remove Old Container') {
+    steps {
+        script {
+            echo "Stopping and removing old container..."
+            bat """
+            docker ps -q -f name=${CONTAINER_NAME}
+            docker ps -a -q -f name=${CONTAINER_NAME}
+            """
+        }
+    }
+}
+
+        stage('Run App with Docker Compose') {
             steps {
                 script {
-                    bat "docker-compose up -d --build"
+                    echo "Running app with Docker Compose..."
+                    bat "docker-compose up -d"
+                    
+                    // Capture Docker Compose logs
+                    echo "Docker Compose Logs:"
+                    bat "docker-compose logs --tail=10"
+                    
+                    // Show the status of containers
+                    bat "docker-compose ps"
                 }
             }
         }
@@ -46,7 +56,8 @@ pipeline {
             echo '❌ Build or deployment failed!'
         }
         success {
-            echo '✅ PHP App deployed successfully with Docker Compose.'
+            echo '✅ App deployed successfully.'
         }
     }
 }
+
