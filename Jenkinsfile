@@ -18,7 +18,7 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful. Visit: http://localhost:8080'
+            echo 'Deployment successful. Visit: http://localhost:8081'
         }
         failure {
             echo 'Deployment failed.'
