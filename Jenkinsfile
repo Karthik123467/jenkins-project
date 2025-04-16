@@ -2,37 +2,47 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_CMD = 'docker-compose'
+        IMAGE_PHP = "php:apache"
+        IMAGE_DB = "mysql:latest"
+        IMAGE_PHPMYADMIN = "phpmyadmin/phpmyadmin"
+        CONTAINER_WEB = "php-web"
+        CONTAINER_DB = "php-db"
+        CONTAINER_PM = "phpmyadmin"
     }
 
     stages {
-        stage('Clone Repo') {
+        stage('Checkout Code') {
             steps {
-                // Jenkins clones automatically, but keeping it explicit
-                git 'https://github.com/Karthik123467/jenkins-project.git'
+                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project.git'
             }
         }
 
-        stage('Stop Existing Containers') {
+        stage('Stop and Remove Old Containers') {
             steps {
                 script {
-                    bat "${env.COMPOSE_CMD} down"
+                    bat """
+                    docker-compose down || echo "No containers running"
+                    """
                 }
             }
         }
 
-        stage('Build and Run Docker') {
+        stage('Build and Run Containers') {
             steps {
                 script {
-                    bat "${env.COMPOSE_CMD} up -d --build"
+                    bat "docker-compose up -d --build"
                 }
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline finished.'
+        failure {
+            echo '❌ Build or deployment failed!'
+        }
+        success {
+            echo '✅ PHP App deployed successfully with Docker Compose.'
         }
     }
 }
+
