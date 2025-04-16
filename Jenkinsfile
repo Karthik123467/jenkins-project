@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        COMPOSE_PROJECT_NAME = 'php_project'
-    }
-
     stages {
         stage('Clone Repo') {
             steps {
@@ -22,10 +18,10 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful. Access it at http://localhost:8081'
+            echo 'Deployment successful. Visit: http://localhost:8080'
         }
         failure {
             echo 'Deployment failed.'
-        }
-    }
+        }
+    }
 }
