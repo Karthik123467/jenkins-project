@@ -16,7 +16,7 @@ pipeline {
             steps {
                 script {
                     echo "Stopping and removing old containers and volumes..."
-                    bat "docker-compose down -v"
+                    bat "docker-compose down"
                 }
             }
         }
@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                     echo "Rebuilding and running the app with latest code..."
-                    bat "docker-compose up -d --build"
+                    bat "docker-compose up"
                 }
             }
         }
