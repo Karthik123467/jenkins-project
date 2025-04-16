@@ -1,3 +1,5 @@
+
+
 pipeline {
     agent any
 
@@ -5,23 +7,26 @@ pipeline {
         IMAGE_PHP = "php:apache"
         IMAGE_DB = "mysql:latest"
         IMAGE_PHPMYADMIN = "phpmyadmin/phpmyadmin"
-        CONTAINER_WEB = "php-web"
-        CONTAINER_DB = "php-db"
-        CONTAINER_PM = "phpmyadmin"
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project.git'
             }
         }
 
-        stage('Stop and Remove Old Containers') {
+        stage('Stop and Remove Old Containers and Volumes') {
             steps {
                 script {
                     bat """
-                    docker-compose down || echo "No containers running"
+                    docker-compose down -v || echo "Nothing to stop"
                     """
                 }
             }
@@ -45,4 +50,3 @@ pipeline {
         }
     }
 }
-
