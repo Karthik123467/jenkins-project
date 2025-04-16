@@ -2,64 +2,53 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "php-demo-app"
-        CONTAINER_NAME = "php-demo-container"
+        IMAGE_NAME = "php:apache"
+        CONTAINER_NAME = "php-docker-stack-demo"
     }
 
     stages {
-        stage('Clean Workspace') {
-            steps {
-                cleanWs() // Make sure no old files remain
-            }
-        }
-
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project'
+                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project.git'
             }
         }
 
-        stage('Stop and Remove Old Containers') {
+        stage('Clean Up Old Containers & Volumes') {
             steps {
                 script {
-                    echo "Stopping and removing old containers and volumes..."
-                    bat "docker-compose down -v || echo No containers to stop"
+                    echo "Cleaning up old containers and volumes..."
+                    bat "docker-compose down -v"
                 }
             }
         }
 
-        stage('Build Docker Image (Force Rebuild)') {
+        stage('Rebuild Docker Images & Start Containers') {
             steps {
                 script {
-                    echo "Building Docker image with --no-cache..."
-                    bat "docker-compose build --no-cache"
+                    echo "Building and starting fresh containers..."
+                    bat "docker-compose up -d --build"
                 }
             }
         }
 
-        stage('Run App with Docker Compose') {
+        stage('Check App Status') {
             steps {
                 script {
-                    echo "Running the app fresh..."
-                    bat "docker-compose up -d"
+                    echo "Showing container status..."
+                    bat "docker-compose ps"
+                    echo "Showing latest logs..."
+                    bat "docker-compose logs --tail=10"
                 }
-            }
-        }
-
-        stage('Verify') {
-            steps {
-                bat "docker-compose ps"
-                bat "docker-compose logs --tail=20"
             }
         }
     }
 
     post {
         success {
-            echo '✅ Deployment complete. Your updated index.php should be visible now.'
+            echo '✅ App deployed with latest GitHub code.'
         }
         failure {
-            echo '❌ Deployment failed!'
+            echo '❌ Deployment failed. Check the logs!'
         }
     }
 }
