@@ -1,42 +1,66 @@
 pipeline {
     agent any
-
+    
     environment {
-        COMPOSE_FILE = 'docker-compose.yml'
+        DOCKER_IMAGE_NAME = 'php-docker-stack-demo'
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                // Explicitly define the branch to checkout
-                git branch: 'main', url: 'https://github.com/Karthik123467/php-docker-stack-demo.git'
+                checkout scm
             }
         }
-        
+
         stage('Build Docker Images') {
             steps {
-                bat 'docker-compose -f %COMPOSE_FILE% down'  // Stop containers if already running
-                bat 'docker-compose -f %COMPOSE_FILE% up -d'  // Start containers in detached mode
+                script {
+                    // Check if the system is Unix-based or Windows-based and choose the appropriate command
+                    if (isUnix()) {
+                        sh 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                    } else {
+                        bat 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                    }
+                }
             }
         }
 
         stage('Verify Containers') {
             steps {
-                bat 'docker ps'
+                script {
+                    // Verify if the container is running (this is an example command, adjust as needed)
+                    if (isUnix()) {
+                        sh 'docker ps'
+                    } else {
+                        bat 'docker ps'
+                    }
+                }
             }
         }
 
         stage('Cleanup') {
             steps {
-                bat 'docker-compose -f %COMPOSE_FILE% down'
+                script {
+                    // Cleanup images after build (adjust as needed)
+                    if (isUnix()) {
+                        sh 'docker system prune -f'
+                    } else {
+                        bat 'docker system prune -f'
+                    }
+                }
             }
         }
     }
 
     post {
-        success {
-            echo 'Deployment was successful!'
+        always {
+            echo 'Deployment finished.'
         }
+
+        success {
+            echo 'Deployment succeeded.'
+        }
+
         failure {
             echo 'Deployment failed.'
         }
