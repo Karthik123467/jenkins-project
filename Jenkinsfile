@@ -1,41 +1,31 @@
 pipeline {
     agent any
 
-    environment {
-        COMPOSE_FILE = 'docker-compose.yml'
-    }
-
-    triggers {
-        githubPush() // auto-trigger on push
-    }
-
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project'
+                git 'https://github.com/Karthik123467/php-docker-stack-demo'
             }
         }
 
-        stage('Rebuild and Start Containers') {
+        stage('Build and Run Docker Containers') {
             steps {
-                sh 'docker-compose down || true'
+                sh 'docker-compose down'
                 sh 'docker-compose up -d --build'
             }
         }
+    }
 
-        stage('Verify Containers') {
-            steps {
-                sh 'docker ps'
-            }
+    post {
+        success {
+            echo 'App deployed successfully!'
         }
-
-        stage('Test PHP') {
-            steps {
-                sh 'curl -f http://localhost:8081 || echo "PHP App Failed!"'
-            }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
+
 
 
 
