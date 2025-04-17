@@ -6,44 +6,36 @@ pipeline {
     }
 
     triggers {
-        githubPush()  // Triggers build when a push happens to GitHub
+        githubPush() // auto-trigger on push
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project'
             }
         }
 
-        stage('Stop & Remove Old Containers') {
+        stage('Rebuild and Start Containers') {
             steps {
-                script {
-                    sh 'docker-compose down || true'
-                }
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d --build'
             }
         }
 
-        stage('Start Containers') {
+        stage('Verify Containers') {
             steps {
-                script {
-                    sh 'docker-compose up -d --build'
-                }
+                sh 'docker ps'
             }
         }
 
-        stage('Verify') {
+        stage('Test PHP') {
             steps {
-                script {
-                    sh 'docker ps'  // Shows running containers
-                }
+                sh 'curl -f http://localhost:8081 || echo "PHP App Failed!"'
             }
-        }
-    }
-
-    post {
-        failure {
-            echo 'Build failed!'
         }
     }
 }
+
+
+
