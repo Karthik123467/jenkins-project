@@ -2,52 +2,65 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "php-docker-stack-demo"
-        CONTAINER_NAME = "php-docker-stack-demo"
+        // Define the path to your docker-compose.yml file (adjust if necessary)
+        COMPOSE_FILE = 'docker-compose.yml'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/php-docker-stack-demo'
+                // Clone your GitHub repository
+                git 'https://github.com/Karthik123467/php-docker-stack-demo'
             }
         }
-
-        stage('Build Docker Image') {
+        
+        stage('Build Docker Images') {
             steps {
                 script {
-                    bat "docker build -t ${IMAGE_NAME} ."
+                    // Use Windows commands for Docker
+                    bat 'docker-compose -f %COMPOSE_FILE% down'  // Stop containers if already running
+                    bat 'docker-compose -f %COMPOSE_FILE% up -d'  // Start containers in detached mode
                 }
             }
         }
 
-        stage('Stop and Remove Old Container') {
+        stage('Verify Containers') {
             steps {
                 script {
-                    bat """
-                    docker stop ${CONTAINER_NAME} || echo "No container to stop"
-                    docker rm ${CONTAINER_NAME} || echo "No container to remove"
-                    """
+                    // Ensure the containers are up and running
+                    bat 'docker ps'
                 }
             }
         }
 
-        stage('Run App with Docker Compose') {
+        stage('Cleanup') {
             steps {
-                script {
-                    bat "docker-compose up -d"
-                }
+                // Optionally, you can clean up the containers if needed after verification
+                bat 'docker-compose -f %COMPOSE_FILE% down'
             }
         }
     }
 
     post {
-        failure {
-            echo '❌ Build or deployment failed!'
-        }
         success {
-            echo '✅ App deployed successfully.'
+            echo 'Deployment was successful!'
+        }
+        failure {
+            echo 'Deployment failed.'
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+     
 
