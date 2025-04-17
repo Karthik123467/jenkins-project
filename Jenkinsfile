@@ -1,34 +1,36 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_IMAGE_NAME = 'php-docker-stack-demo'
+        COMPOSE_PROJECT_NAME = 'phpstack'
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout Code') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build & Start Services') {
             steps {
                 script {
-                    // Check if the system is Unix-based or Windows-based and choose the appropriate command
                     if (isUnix()) {
-                        sh 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                        sh 'docker-compose down'
+                        sh 'docker-compose build'
+                        sh 'docker-compose up -d'
                     } else {
-                        bat 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                        bat 'docker-compose down'
+                        bat 'docker-compose build'
+                        bat 'docker-compose up -d'
                     }
                 }
             }
         }
 
-        stage('Verify Containers') {
+        stage('Verify App') {
             steps {
                 script {
-                    // Verify if the container is running (this is an example command, adjust as needed)
                     if (isUnix()) {
                         sh 'docker ps'
                     } else {
@@ -37,32 +39,17 @@ pipeline {
                 }
             }
         }
-
-        stage('Cleanup') {
-            steps {
-                script {
-                    // Cleanup images after build (adjust as needed)
-                    if (isUnix()) {
-                        sh 'docker system prune -f'
-                    } else {
-                        bat 'docker system prune -f'
-                    }
-                }
-            }
-        }
     }
 
     post {
         always {
-            echo 'Deployment finished.'
+            echo 'Pipeline completed.'
         }
-
         success {
-            echo 'Deployment succeeded.'
+            echo 'App deployed successfully!'
         }
-
         failure {
-            echo 'Deployment failed.'
+            echo 'Pipeline failed.'
         }
     }
 }
