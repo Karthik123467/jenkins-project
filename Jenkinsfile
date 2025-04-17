@@ -2,54 +2,36 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = 'phpstack'
+        COMPOSE_PROJECT_NAME = "php-docker-stack-demo"
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
-                checkout scm
+                git 'https://github.com/Karthik123467/php-docker-stack-demo.git'
             }
         }
 
-        stage('Build & Start Services') {
+        stage('Stop & Remove Containers') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker-compose down'
-                        sh 'docker-compose build'
-                        sh 'docker-compose up -d'
-                    } else {
-                        bat 'docker-compose down'
-                        bat 'docker-compose build'
-                        bat 'docker-compose up -d'
-                    }
-                }
+                sh 'docker-compose down || true'
             }
         }
 
-        stage('Verify App') {
+        stage('Build & Deploy') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker ps'
-                    } else {
-                        bat 'docker ps'
-                    }
-                }
+                sh 'docker-compose up -d --build'
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline completed.'
+        failure {
+            echo "Deployment failed!"
         }
         success {
-            echo 'App deployed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed.'
+            echo "Deployment successful!"
         }
     }
 }
+
