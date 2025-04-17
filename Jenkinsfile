@@ -1,16 +1,24 @@
 pipeline {
     agent any
 
+    environment {
+        COMPOSE_FILE = 'docker-compose.yml'
+    }
+
     stages {
-        stage('Clone Repository') {
+        stage('Preparation') {
             steps {
-                git 'https://github.com/Karthik123467/php-docker-stack-demo'
+                echo '✅ Repository checked out by Jenkins.'
+                sh 'ls -la'
             }
         }
 
-        stage('Build and Run Docker Containers') {
+        stage('Build and Deploy') {
             steps {
-                sh 'docker-compose down'
+                echo '📦 Shutting down any existing containers...'
+                sh 'docker-compose down || true'
+
+                echo '🚀 Starting containers using docker-compose...'
                 sh 'docker-compose up -d --build'
             }
         }
@@ -18,14 +26,10 @@ pipeline {
 
     post {
         success {
-            echo 'App deployed successfully!'
+            echo '✅ Application deployed successfully!'
         }
         failure {
-            echo 'Build failed!'
+            echo '❌ Build failed. Please check the error log.'
         }
     }
 }
-
-
-
-
