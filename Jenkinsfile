@@ -2,34 +2,52 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_FILE = 'docker-compose.yml'
+        IMAGE_NAME = "php-docker-stack-demo"
+        CONTAINER_NAME = "php-docker-stack-demo"
     }
 
     stages {
-        stage('Preparation') {
+        stage('Checkout Code') {
             steps {
-                echo '✅ Repository checked out by Jenkins.'
-                sh 'ls -la'
+                git branch: 'main', url: 'https://github.com/Karthik123467/php-docker-stack-demo'
             }
         }
 
-        stage('Build and Deploy') {
+        stage('Build Docker Image') {
             steps {
-                echo '📦 Shutting down any existing containers...'
-                sh 'docker-compose down || true'
+                script {
+                    bat "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
 
-                echo '🚀 Starting containers using docker-compose...'
-                sh 'docker-compose up -d --build'
+        stage('Stop and Remove Old Container') {
+            steps {
+                script {
+                    bat """
+                    docker stop ${CONTAINER_NAME} || echo "No container to stop"
+                    docker rm ${CONTAINER_NAME} || echo "No container to remove"
+                    """
+                }
+            }
+        }
+
+        stage('Run App with Docker Compose') {
+            steps {
+                script {
+                    bat "docker-compose up -d"
+                }
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Application deployed successfully!'
-        }
         failure {
-            echo '❌ Build failed. Please check the error log.'
+            echo '❌ Build or deployment failed!'
+        }
+        success {
+            echo '✅ App deployed successfully.'
         }
     }
 }
+
