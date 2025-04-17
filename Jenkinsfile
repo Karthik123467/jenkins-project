@@ -2,52 +2,48 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = "php-docker-stack-demo"
+        COMPOSE_FILE = 'docker-compose.yml'
+    }
+
+    triggers {
+        githubPush()  // Triggers build when a push happens to GitHub
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/jenkins-project'
+                git branch: 'main', url: 'https://github.com/yourusername/your-repo.git'
             }
         }
 
         stage('Stop & Remove Old Containers') {
             steps {
                 script {
-                    echo "Stopping and removing old containers and volumes..."
-                    bat "docker-compose down"
+                    sh 'docker-compose down || true'
                 }
             }
         }
 
-        stage('Rebuild and Run Docker Compose') {
+        stage('Start Containers') {
             steps {
                 script {
-                    echo "Rebuilding and running the app with latest code..."
-                    bat "docker-compose up"
+                    sh 'docker-compose up -d --build'
                 }
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Verify') {
             steps {
                 script {
-                    echo "Showing container status..."
-                    bat "docker-compose ps"
-                    echo "Tailing logs..."
-                    bat "docker-compose logs --tail=10"
+                    sh 'docker ps'  // Shows running containers
                 }
             }
         }
     }
 
     post {
-        success {
-            echo '✅ App deployed with latest changes from GitHub.'
-        }
         failure {
-            echo '❌ Deployment failed. Check logs.'
+            echo 'Build failed!'
         }
     }
 }
