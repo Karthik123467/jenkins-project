@@ -12,26 +12,41 @@ pipeline {
             }
         }
 
-        stage('Stop & Remove Containers') {
+        stage('Stop Existing Containers (if any)') {
             steps {
-                sh 'docker-compose down || true'
+                script {
+                    sh 'docker-compose down || true'
+                }
             }
         }
 
-        stage('Build & Deploy') {
+        stage('Build and Run Containers') {
             steps {
                 sh 'docker-compose up -d --build'
+            }
+        }
+
+        stage('Show Running Containers') {
+            steps {
+                sh 'docker ps'
             }
         }
     }
 
     post {
-        failure {
-            echo "Deployment failed!"
-        }
         success {
-            echo "Deployment successful!"
+            echo 'Deployment successful! Visit:'
+            echo 'http://localhost:8081 => index.php'
+            echo 'http://localhost:8001 => phpMyAdmin'
+        }
+        failure {
+            echo 'Deployment failed.'
         }
     }
 }
+
+
+
+
+
 
