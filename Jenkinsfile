@@ -5,13 +5,6 @@ pipeline {
         COMPOSE_PROJECT_NAME = "php-docker-stack-demo"
     }
 
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/Karthik123467/php-docker-stack-demo.git'
-            }
-        }
-
         stage('Stop Existing Containers (if any)') {
             steps {
                 script {
