@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     // Copy the cloned repository into the project-copy2 container
-                    sh 'docker cp project-clone1/. project-copy2:/var/www/html'
+                    sh 'docker cp project-clone1/. project-copy2'
                 }
             }
         }
@@ -23,7 +23,7 @@ pipeline {
             steps {
                 script {
                     // Run docker-compose up inside the project-copy2 container
-                    sh 'docker exec project-copy2 bash -c "cd /var/www/html && docker-compose up -d"'
+                    sh 'docker exec project-copy2 bash "docker-compose up"'
                 }
             }
         }
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     // Run docker-compose down inside the project-copy2 container
-                    sh 'docker exec project-copy2 bash -c "cd /var/www/html && docker-compose down"'
+                    sh 'docker exec project-copy2 bash "docker-compose down"'
                 }
             }
         }
