@@ -2,29 +2,34 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_CONTAINER = 'project-copy2'
-        REPO_URL = 'https://github.com/Karthik123467/php-docker-stack-demo.git' // <-- change this
-        PROJECT_DIR = 'php-docker-project'
+        // Set Docker container name for easy reference
+        CONTAINER_NAME = 'project-copy2'
     }
 
     stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: "${REPO_URL}"
+                script {
+                    // Clone the repository again, in case you want to do any specific operations
+                    sh 'git clone https://github.com/Karthik123467/php-docker-stack-demo.git'
+                }
             }
         }
 
         stage('Copy to Container') {
             steps {
                 script {
-                    // Archive current workspace into a tar file
-                    sh "tar -czf project.tar.gz ."
-                    
-                    // Copy tarball into container
-                    sh "docker cp project.tar.gz ${PROJECT_CONTAINER}:/project.tar.gz"
+                    // Archive the files, excluding .git and the tar.gz file to avoid race condition
+                    sh 'tar --warning=no-file-changed --exclude=.git --exclude=project.tar.gz -czf project.tar.gz .'
 
-                    // Extract inside the container
-                    sh "docker exec ${PROJECT_CONTAINER} sh -c 'rm -rf /project && mkdir /project && tar -xzf /project.tar.gz -C /project'"
+                    // Copy to the Docker container project-copy2 (Ensure the container is running)
+                    sh 'docker cp project.tar.gz ${CONTAINER_NAME}:/var/www/html/'
                 }
             }
         }
@@ -32,22 +37,28 @@ pipeline {
         stage('Docker Compose Up') {
             steps {
                 script {
-                    sh "docker exec ${PROJECT_CONTAINER} sh -c 'cd /project && docker-compose up -d'"
+                    // Run docker-compose up (bring up the containers defined in the docker-compose.yml)
+                    sh 'docker-compose up -d'
                 }
             }
         }
 
         stage('Run Tests or Wait') {
             steps {
-                echo 'Running application or test logic...'
-                sleep 10 // Optional: wait for services to be ready
+                script {
+                    // You can put your testing code or just wait for a while
+                    echo 'Waiting for container to start or running tests...'
+                    // Example: sleep 60 (wait for the container to initialize)
+                    // sleep 60
+                }
             }
         }
 
         stage('Docker Compose Down') {
             steps {
                 script {
-                    sh "docker exec ${PROJECT_CONTAINER} sh -c 'cd /project && docker-compose down'"
+                    // Run docker-compose down to stop the containers
+                    sh 'docker-compose down'
                 }
             }
         }
@@ -55,7 +66,8 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline execution finished.'
+            // Cleanup steps that should run regardless of the pipeline status
+            cleanWs()
         }
     }
 }
