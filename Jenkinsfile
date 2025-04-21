@@ -5,7 +5,7 @@ pipeline {
             steps {
                 script {
                     // Clone repository to the Jenkins workspace
-                    sh 'git clone https://github.com/Karthik123467/php-docker-stack-demo.git'
+                    sh 'git clone https://github.com/Karthik123467/php-docker-stack-demo.git project-clone'
                 }
             }
         }
@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     // Copy the cloned repository into the project-copy2 container
-                    sh 'docker cp php-docker-stack-demo/. project-copy2'
+                    sh 'cp project-clone project-copy2'
                 }
             }
         }
