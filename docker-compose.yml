@@ -3,7 +3,7 @@ services:
   www:
     image: php:apache  # Use 'image' instead of 'images'
     volumes:
-      - "./index.php:/var/www/html/index.php"
+      - "./:/var/www/html"
     ports:
       - 8081:80
   db:
