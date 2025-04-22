@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         REPO_URL = 'https://github.com/Karthik123467/php-docker-stack-demo.git'
-        CLONE_DIR = 'php-docker-stack-demo' // Directory where the repo will be cloned
+        CLONE_DIR = 'php-docker-stack-demo2' // Directory where the repo will be cloned
     }
     stages {
         stage('Clone Repository') {
