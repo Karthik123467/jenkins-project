@@ -1,43 +1,25 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "project-app"
-        CONTAINER_NAME = "project-container"
+        REPO_URL = 'https://github.com/Karthik123467/php-docker-stack-demo.git'
+        CLONE_DIR = 'php-docker-stack-demo' // Directory where the repo will be cloned
     }
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/php-docker-stack-demo.git'
-            }
-        }
-        stage('Build Docker Image') {
+        stage('Clone Repository') {
             steps {
                 script {
-                    isUnix() ? sh("docker build -t ${IMAGE_NAME} .") : bat("docker build -t ${IMAGE_NAME} .")
+                    // Clone the repository to the specified directory
+                    sh "git clone ${REPO_URL} ${CLONE_DIR}"
                 }
             }
         }
-        stage('Stop and Remove Old Container') {
+        stage('Run Docker Compose') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh """
-                        docker stop ${CONTAINER_NAME} || echo "No container to stop"
-                        docker rm ${CONTAINER_NAME} || echo "No container to remove"
-                        """
-                    } else {
-                        bat """
-                        docker stop ${CONTAINER_NAME} || echo "No container to stop"
-                        docker rm ${CONTAINER_NAME} || echo "No container to remove"
-                        """
+                    // Navigate to the cloned directory and run docker-compose
+                    dir(CLONE_DIR) {
+                        isUnix() ? sh("docker-compose up ") : bat("docker-compose up")
                     }
-                }
-            }
-        }
-        stage('Run App with Docker Compose') {
-            steps {
-                script {
-                    isUnix() ? sh("docker-compose up -d") : bat("docker-compose up -d")
                 }
             }
         }
