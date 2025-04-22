@@ -3,13 +3,14 @@ pipeline {
     environment {
         IMAGE_NAME = "project-app"
         CONTAINER_NAME = "project-container"
-    }
+    }   
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Karthik123467/php-docker-stack-demo'
+                git url: 'https://github.com/Karthik123467/php-docker-stack-demo.git'
             }
         }
+    }
         stage('Build Docker Image') {
             steps {
                 script {
