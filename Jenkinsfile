@@ -21,17 +21,6 @@ pipeline {
             }
         }
 
-        stage('Stop and Remove Old Container') {
-            steps {
-                script {
-                    sh """
-                    docker stop ${CONTAINER_NAME} || echo "No container to stop"
-                    docker rm ${CONTAINER_NAME} || echo "No container to remove"
-                    """
-                }
-            }
-        }
-
         stage('Run App with Docker Compose') {
             steps {
                 script {
