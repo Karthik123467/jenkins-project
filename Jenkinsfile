@@ -16,7 +16,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat "docker build -t ${IMAGE_NAME} ."
+                    sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
@@ -24,7 +24,7 @@ pipeline {
         stage('Stop and Remove Old Container') {
             steps {
                 script {
-                    bat """
+                    sh """
                     docker stop ${CONTAINER_NAME} || echo "No container to stop"
                     docker rm ${CONTAINER_NAME} || echo "No container to remove"
                     """
@@ -35,7 +35,7 @@ pipeline {
         stage('Run App with Docker Compose') {
             steps {
                 script {
-                    bat "docker-compose up -d"
+                    sh "docker-compose up -d"
                 }
             }
         }
