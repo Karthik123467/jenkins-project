@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "Project-app"
-        CONTAINER_NAME = "Project-container"
+        IMAGE_NAME = "project-app"
+        CONTAINER_NAME = "project-container"
     }
 
     stages {
