@@ -2,14 +2,14 @@ pipeline {
     agent any
     environment {
         REPO_URL = 'https://github.com/Karthik123467/php-docker-stack-demo.git'
-        CLONE_DIR = 'php-docker-stack-demo2'
+        CLONE_DIR = '/mnt/kumpa/php-docker-stack-demo2'
     }
     stages {
         stage('Clone Repository') {
             steps {
                 script {
-                    // Use bat for Windows shell
-                    bat "git clone %REPO_URL% %CLONE_DIR%"
+                    sh "rm -rf ${CLONE_DIR}" // Optional: clean up if needed
+                    sh "git clone ${REPO_URL} ${CLONE_DIR}"
                 }
             }
         }
@@ -17,8 +17,7 @@ pipeline {
             steps {
                 script {
                     dir(CLONE_DIR) {
-                        // Use bat to run docker-compose
-                        bat "docker-compose up --build -d"
+                        sh "docker-compose up --build -d"
                     }
                 }
             }
@@ -27,7 +26,7 @@ pipeline {
             steps {
                 script {
                     dir(CLONE_DIR) {
-                        bat "docker-compose logs --tail=50"
+                        sh "docker-compose logs --tail=50"
                     }
                 }
             }
