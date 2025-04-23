@@ -8,7 +8,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Karthik123467/php-docker-stack-demo.git'
+                git url: 'https://github.com/Karthik123467/php-docker-stack-demo.git', branch: 'main'
+
             }
         }
 
