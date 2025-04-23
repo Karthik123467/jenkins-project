@@ -2,34 +2,30 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/Karthik123467/php-docker-stack-demo.git'
-        CLONE_DIR = 'php-docker-stack-demo3'
+        DOCKER_IMAGE = 'pavankumar/php-demo-project:latest'
     }
 
     stages {
         stage('Clone Repository') {
             steps {
+                git 'https://github.com/Karthik123467/php-docker-stack-demo.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
                 script {
-                    sh "git clone ${REPO_URL} ${CLONE_DIR}"
+                    dockerImage = docker.build("${env.DOCKER_IMAGE}")
                 }
             }
         }
 
-        stage('Run Docker Compose') {
+        stage('Push Docker Image') {
             steps {
-                dir("${CLONE_DIR}") {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
-                        sh 'docker-compose up --build -d'
-                    }
-                }
-            }
-        }
-
-        stage('Check Docker Logs') {
-            steps {
-                dir("${CLONE_DIR}") {
-                    script {
-                        sh 'docker-compose logs -f'
+                        sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                        sh "docker push ${env.DOCKER_IMAGE}"
                     }
                 }
             }
@@ -37,11 +33,8 @@ pipeline {
     }
 
     post {
-        success {
-            echo '✅ App deployed successfully.'
-        }
-        failure {
-            echo '❌ Deployment failed.'
+        always {
+            echo 'Pipeline finished.'
         }
     }
 }
