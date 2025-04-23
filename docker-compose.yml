@@ -1,7 +1,7 @@
 version: '3'
 services:
   www:
-    build: .  # Build using Dockerfile
+    build: .  # Build using Dockerfilehg
     volumes:
       - "./:/var/www/html"
     ports:
